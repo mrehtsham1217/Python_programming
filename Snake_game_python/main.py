@@ -1,59 +1,53 @@
-from turtle import Turtle
-STARTING_POSITIONS = [(0, 0), (-20, 0), (-40, 0)]
-MOVE_DISTANCE = 20
-UP = 90
-DOWN = 270
-LEFT = 180
-RIGHT = 0
+from turtle import Screen
+from snake import Snake
+from food import Food
+from score_board import ScoreBoard
+import time
+
+screen = Screen()
+screen.setup(width=600, height=600)
+screen.bgcolor("black")
+screen.title("My Snake Game")
+screen.tracer(0)  # to remove the gap between snakee segments
+
+snake = Snake()
+food = Food()
+scoreboard = ScoreBoard()
+
+screen.listen()
+screen.onkey(snake.up, "Up")
+screen.onkey(snake.down, "Down")
+screen.onkey(snake.left, "Left")
+screen.onkey(snake.right, "Right")
+
+game_is_on = True
+while game_is_on:
+    screen.update()
+    time.sleep(0.1)
+    snake.move()
+
+    # Detect collision with food.
+    if snake.head.distance(food) < 15:
+        food.refresh()
+        snake.extend()
+        scoreboard.increase_score()
+
+    # Detect collision with wall.
+    if snake.head.xcor() > 295 or snake.head.xcor() < -295 or snake.head.ycor() > 295 or snake.head.ycor() < -295:
+        scoreboard.reset_scoreboard()
+        snake.reset_snake()
+        # game_is_on = False
+        # scoreboard.game_over()
+
+    # Detect collision with tail.
+    for segment in snake.segments:
+        if segment == snake.head:
+            pass
+        elif snake.head.distance(segment) < 10:
+            # game_is_on = False
+            # scoreboard.game_over()
+            scoreboard.reset_scoreboard()
+            snake.reset_snake()
 
 
-class Snake:
-
-    def __init__(self):
-        self.segments = []
-        self.create_snake()
-        self.head = self.segments[0]
-
-    def create_snake(self):
-        for position in STARTING_POSITIONS:
-            self.add_segment(position)
-
-    def add_segment(self, position):
-        new_segment = Turtle("square")
-        new_segment.color("white")
-        new_segment.penup()
-        new_segment.goto(position)
-        self.segments.append(new_segment)
-
-    def extend(self):
-        self.add_segment(self.segments[-1].position())
-
-    def move(self):
-        for seg_num in range(len(self.segments) - 1, 0, -1):
-            new_x = self.segments[seg_num - 1].xcor()
-            new_y = self.segments[seg_num - 1].ycor()
-            self.segments[seg_num].goto(new_x, new_y)
-        self.head.forward(MOVE_DISTANCE)
-
-    def up(self):
-        if self.head.heading() != DOWN:
-            self.head.setheading(UP)
-
-    def down(self):
-        if self.head.heading() != UP:
-            self.head.setheading(DOWN)
-
-    def left(self):
-        if self.head.heading() != RIGHT:
-            self.head.setheading(LEFT)
-
-    def right(self):
-        if self.head.heading() != LEFT:
-            self.head.setheading(RIGHT)
-
-    def reset_snake(self):
-        for seg in self.segments:
-            seg.goto(1000, 1000)
-        self.segments.clear()
-        self.create_snake()
-        self.head = self.segments[0]
+screen.exitonclick()
